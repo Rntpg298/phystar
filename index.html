@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=phystar-20261122-2" />
+    <link rel="stylesheet" href="styles.css?v=phystar-skill-tree-color-20261122b" />
   </head>
   <body>
     <div class="starfield" id="starfield" aria-hidden="true"></div>
@@ -135,7 +135,11 @@
             <p class="privacy-kicker">SECRET EXPERIMENT</p>
             <h2>Elektronen-Klicker</h2>
           </div>
-          <div class="atom-score" aria-live="polite"><span id="atom-score">0</span> Elektronen</div>
+          <div class="atom-score" aria-live="polite">
+            <b id="atom-currency-score">0</b> Dollar ·
+            <span id="atom-score">0</span> Elektronen ·
+            <small><span id="atom-total-electron-score">0</span> insgesamt gesammelt</small>
+          </div>
         </div>
         <div class="physicist-dream" id="physicist-dream">
           <span id="dream-stage">PHYSIK-STUDENT</span>
@@ -147,8 +151,12 @@
             <strong id="daily-reward-value">500</strong>
           </button>
           <button class="dashboard-action" id="prestige-button" type="button" disabled>
-            <span>PRESTIGE</span>
-            <strong id="prestige-value">0 Stufen</strong>
+            <span>ZEITMASCHINE</span>
+            <strong id="prestige-value">1 Mio. Elektronen nötig</strong>
+          </button>
+          <button class="dashboard-action" id="skill-tree-button" type="button">
+            <span>SKILLTREE</span>
+            <strong><b id="skill-points-dashboard">0</b> Punkte</strong>
           </button>
           <button class="dashboard-action" id="guide-button" type="button">
             <span>PHYSIK-LEITFADEN</span>
@@ -164,19 +172,19 @@
           <span><b id="stat-crit">0</b> Kritische Klicks</span>
           <span><b id="stat-elements">0</b> Elemente</span>
         </div>
-        <div class="quest-board" id="quest-board">
-          <div class="quest-header">
-            <strong>Quests</strong>
-            <small id="quest-summary">0 / 4 abgeschlossen</small>
-          </div>
-          <div class="quest-grid" id="quest-grid"></div>
-        </div>
         <div class="electron-clicker">
           <button class="electron-target" id="electron-target" type="button" aria-label="Elektron sammeln">
             <span class="electron-core" id="electron-core"><b id="electron-core-value">1</b></span>
             <span class="electron-orbits" id="electron-orbits" aria-hidden="true"></span>
           </button>
           <p id="atom-rates">+1 pro Klick · 0 pro Sekunde</p>
+        </div>
+        <div class="quest-board" id="quest-board">
+          <div class="quest-header">
+            <strong>Quests</strong>
+            <small id="quest-summary">0 / 4 abgeschlossen</small>
+          </div>
+          <div class="quest-grid" id="quest-grid"></div>
         </div>
         <div class="atom-upgrades">
           <button class="atom-upgrade" id="upgrade-click" type="button">
@@ -203,7 +211,7 @@
           <button class="atom-upgrade" id="upgrade-fission" type="button">
             <span>
               <strong>Kernspaltung</strong>
-              <small id="upgrade-fission-level">Stufe 0 · ×2 Kraft</small>
+              <small id="upgrade-fission-level">Stufe 0 · ×2 Kraft · Elektronen halbiert</small>
             </span>
             <b id="upgrade-fission-cost">25.000</b>
           </button>
@@ -253,6 +261,19 @@
       </div>
     </dialog>
 
+    <dialog id="skill-tree-dialog">
+      <div class="dialog-content skill-tree-content">
+        <button class="atom-game-back" id="skill-tree-close" type="button" aria-label="Zurück zum Minigame" title="Zurück zum Minigame">
+          <span aria-hidden="true">←</span>
+        </button>
+        <p class="privacy-kicker">DAUERHAFTER FORSCHUNGSZWEIG</p>
+        <h2>Skilltree</h2>
+        <p class="skill-tree-summary"><b id="skill-points-value">0</b> verfügbare Punkte</p>
+        <div class="skill-tree-grid">
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="element-detail-dialog">
       <div class="dialog-content element-detail-content">
         <p class="privacy-kicker" id="element-detail-number">ELEMENT</p>
@@ -271,10 +292,16 @@
         <h2>Vom Klick zum Element</h2>
         <ol>
           <li><strong>Elektronen:</strong> Mit jedem Klick erzeugst du Elektronen.</li>
+          <li><strong>Dollar:</strong> Jeder Klick bringt zusätzlich 1 Dollar.</li>
           <li><strong>Reaktor:</strong> Pro Sekunde entstehen dauerhafte Produktionsraten.</li>
-          <li><strong>Orbitale:</strong> Mehr Klickstufen zeigen mehr Elektronenorbitale.</li>
+          <li><strong>Orbitale:</strong> Das Atom bewegt sich durch das Labor. Drei elliptische Bahnen zeigen die aktuellen verfügbaren Elektronen.</li>
+          <li><strong>118er-Umwandlung:</strong> Bei 118 Elektronen ziehen sich alle Elektronen in einer Animation zusammen. Danach werden 118 Dollar gutgeschrieben und die sichtbaren Elektronen beginnen bei 0.</li>
+          <li><strong>Labor-Upgrades:</strong> Alle normalen Verbesserungen werden mit Dollar gekauft.</li>
+          <li><strong>Forschungspunkte:</strong> Für je 500 insgesamt erzeugte Elektronen erhältst du einen Punkt für den Skilltree.</li>
+          <li><strong>Skilltree:</strong> Der Baum hat sechs Ebenen mit 63 einmaligen Skills. Die späteren Skills verbinden mehrere Effekte, ohne dieselbe Kombination zu wiederholen.</li>
           <li><strong>Elemente:</strong> Gesammelte Lebenszeit-Elektronen schalten das Periodensystem frei.</li>
-          <li><strong>Prestige:</strong> Mit allen Elementen beginnt ein stärkerer neuer Zyklus.</li>
+          <li><strong>Zeitmaschine:</strong> Die erste Zeitreise benötigt 1 Mio. gesammelte Elektronen. Danach steigt der Bedarf bei jeder Reise auf das Vierfache.</li>
+          <li><strong>Offline-Fortschritt:</strong> Der Reaktor erzeugt weiterhin bis zu acht Stunden lang Elektronen, während die Seite geschlossen ist.</li>
         </ol>
         <div class="dialog-actions">
           <button id="physics-guide-close" type="button">Verstanden</button>
@@ -291,6 +318,6 @@
     </button>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script src="app.js?v=phystar-unlimited-20261122"></script>
+    <script src="app.js?v=phystar-skill-purchase-20261122"></script>
   </body>
 </html>
