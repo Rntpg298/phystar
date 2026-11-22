@@ -202,6 +202,7 @@ const elements = [
 ];
 
 const defaultAtomGame = {
+  version: 2,
   electrons: 0,
   lifetime: 0,
   clickLevel: 0,
@@ -219,7 +220,11 @@ const upgradeMaxLevel = 3;
 
 try {
   const savedGame = JSON.parse(localStorage.getItem("phystar-atom-game"));
-  if (savedGame) atomGame = { ...defaultAtomGame, ...savedGame };
+  if (savedGame && savedGame.version === defaultAtomGame.version) {
+    atomGame = { ...defaultAtomGame, ...savedGame };
+  } else {
+    atomGame = { ...defaultAtomGame };
+  }
 } catch {
   atomGame = { ...defaultAtomGame };
 }
@@ -256,7 +261,7 @@ function formatNumber(value) {
 }
 
 function upgradeCost(baseCost, level) {
-  return Math.floor(baseCost * Math.pow(1.72, level));
+  return Math.floor(baseCost * Math.pow(2.35, level));
 }
 
 function limitedCost(baseCost, level) {
@@ -291,7 +296,7 @@ function saveAtomGame() {
 function unlockedElementCount() {
   return elements.reduce((count, element, index) => {
     const atomicNumber = index + 1;
-    const threshold = atomicNumber === 1 ? 0 : Math.round(20 * Math.pow(1.095, atomicNumber - 1));
+    const threshold = atomicNumber === 1 ? 0 : Math.round(100 * Math.pow(1.12, atomicNumber - 1));
     return count + (atomGame.lifetime >= threshold ? 1 : 0);
   }, 0);
 }
@@ -313,7 +318,7 @@ function renderElements() {
   elements.forEach((entry, index) => {
     const atomicNumber = index + 1;
     const [symbol, name] = entry.split("|");
-    const threshold = atomicNumber === 1 ? 0 : Math.round(20 * Math.pow(1.095, atomicNumber - 1));
+    const threshold = atomicNumber === 1 ? 0 : Math.round(100 * Math.pow(1.12, atomicNumber - 1));
     const isUnlocked = atomGame.lifetime >= threshold;
     if (isUnlocked) unlocked += 1;
 
@@ -388,14 +393,14 @@ function renderAtomGame() {
   }
 
   const costs = {
-    click: limitedCost(25, atomGame.clickLevel),
-    auto: limitedCost(50, atomGame.autoLevel),
-    magnet: limitedCost(100, atomGame.magnetLevel),
-    fission: limitedCost(7500, atomGame.fissionLevel),
-    laser: limitedCost(10000, atomGame.laserLevel),
-    collider: limitedCost(75000, atomGame.colliderLevel),
-    superconductor: limitedCost(500000, atomGame.superconductorLevel),
-    nobel: limitedCost(5000000, atomGame.nobelLevel)
+    click: limitedCost(50, atomGame.clickLevel),
+    auto: limitedCost(150, atomGame.autoLevel),
+    magnet: limitedCost(500, atomGame.magnetLevel),
+    fission: limitedCost(25000, atomGame.fissionLevel),
+    laser: limitedCost(100000, atomGame.laserLevel),
+    collider: limitedCost(1000000, atomGame.colliderLevel),
+    superconductor: limitedCost(10000000, atomGame.superconductorLevel),
+    nobel: limitedCost(100000000, atomGame.nobelLevel)
   };
 
   const levelText = (level, effect) =>
@@ -482,7 +487,7 @@ if (electronTarget) electronTarget.addEventListener("click", () => {
 
 if (upgradeClick) upgradeClick.addEventListener("click", () => {
   if (atomGame.clickLevel >= upgradeMaxLevel) return;
-  const cost = upgradeCost(25, atomGame.clickLevel);
+  const cost = upgradeCost(50, atomGame.clickLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
   atomGame.clickLevel += 1;
@@ -493,7 +498,7 @@ if (upgradeClick) upgradeClick.addEventListener("click", () => {
 
 if (upgradeAuto) upgradeAuto.addEventListener("click", () => {
   if (atomGame.autoLevel >= upgradeMaxLevel) return;
-  const cost = upgradeCost(50, atomGame.autoLevel);
+  const cost = upgradeCost(150, atomGame.autoLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
   atomGame.autoLevel += 1;
@@ -504,7 +509,7 @@ if (upgradeAuto) upgradeAuto.addEventListener("click", () => {
 
 if (upgradeMagnet) upgradeMagnet.addEventListener("click", () => {
   if (atomGame.magnetLevel >= upgradeMaxLevel) return;
-  const cost = upgradeCost(100, atomGame.magnetLevel);
+  const cost = upgradeCost(500, atomGame.magnetLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
   atomGame.magnetLevel += 1;
@@ -515,7 +520,7 @@ if (upgradeMagnet) upgradeMagnet.addEventListener("click", () => {
 
 if (upgradeFission) upgradeFission.addEventListener("click", () => {
   if (atomGame.fissionLevel >= upgradeMaxLevel) return;
-  const cost = upgradeCost(7500, atomGame.fissionLevel);
+  const cost = upgradeCost(25000, atomGame.fissionLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
   atomGame.fissionLevel += 1;
@@ -546,10 +551,10 @@ function buyAdvancedUpgrade(upgrade, stateKey, cost) {
   });
 }
 
-buyAdvancedUpgrade(upgradeLaser, "laserLevel", () => upgradeCost(10000, atomGame.laserLevel));
-buyAdvancedUpgrade(upgradeCollider, "colliderLevel", () => upgradeCost(75000, atomGame.colliderLevel));
-buyAdvancedUpgrade(upgradeSuperconductor, "superconductorLevel", () => upgradeCost(500000, atomGame.superconductorLevel));
-buyAdvancedUpgrade(upgradeNobel, "nobelLevel", () => upgradeCost(5000000, atomGame.nobelLevel));
+buyAdvancedUpgrade(upgradeLaser, "laserLevel", () => upgradeCost(100000, atomGame.laserLevel));
+buyAdvancedUpgrade(upgradeCollider, "colliderLevel", () => upgradeCost(1000000, atomGame.colliderLevel));
+buyAdvancedUpgrade(upgradeSuperconductor, "superconductorLevel", () => upgradeCost(10000000, atomGame.superconductorLevel));
+buyAdvancedUpgrade(upgradeNobel, "nobelLevel", () => upgradeCost(100000000, atomGame.nobelLevel));
 
 if (atomReset) atomReset.addEventListener("click", () => {
   if (!window.confirm("Das Elektronen-Spiel wirklich zurücksetzen?")) return;
