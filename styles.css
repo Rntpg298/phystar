@@ -475,11 +475,40 @@ input {
 }
 
 .electron-core {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
   background: #f2b966;
   box-shadow: 0 0 18px rgba(242, 185, 102, 0.9);
+  transition: width 220ms ease, height 220ms ease, box-shadow 220ms ease;
+}
+
+.electron-core b {
+  color: #17243a;
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+}
+
+.electron-core[data-level="1"] {
+  width: 50px;
+  height: 50px;
+  box-shadow: 0 0 24px rgba(242, 185, 102, 0.95), 0 0 0 5px rgba(105, 214, 223, 0.12);
+}
+
+.electron-core[data-level="2"],
+.electron-core[data-level="3"] {
+  width: 58px;
+  height: 58px;
+  box-shadow: 0 0 28px rgba(242, 185, 102, 1), 0 0 0 8px rgba(105, 214, 223, 0.14);
+}
+
+.electron-core[data-level="4"],
+.electron-core[data-level="5"] {
+  width: 68px;
+  height: 68px;
+  box-shadow: 0 0 34px rgba(242, 185, 102, 1), 0 0 0 11px rgba(105, 214, 223, 0.16);
 }
 
 .electron-burst {

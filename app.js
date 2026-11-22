@@ -30,6 +30,8 @@ const atomReset = document.getElementById("atom-reset");
 const upgradeClick = document.getElementById("upgrade-click");
 const upgradeAuto = document.getElementById("upgrade-auto");
 const upgradeMagnet = document.getElementById("upgrade-magnet");
+const electronCore = document.getElementById("electron-core");
+const electronCoreValue = document.getElementById("electron-core-value");
 
 function createStarfield() {
   const starfield = document.getElementById("starfield");
@@ -276,6 +278,11 @@ function renderElements() {
 function renderAtomGame() {
   atomScore.textContent = formatNumber(atomGame.electrons);
   atomRates.textContent = `+${formatNumber(clickPower())} pro Klick · ${formatNumber(autoPower())} pro Sekunde`;
+  if (electronCoreValue) electronCoreValue.textContent = formatNumber(clickPower());
+  if (electronCore) {
+    const visualLevel = Math.min(5, atomGame.clickLevel + atomGame.magnetLevel);
+    electronCore.dataset.level = String(visualLevel);
+  }
 
   const clickCost = upgradeCost(25, atomGame.clickLevel);
   const autoCost = upgradeCost(50, atomGame.autoLevel);
@@ -301,7 +308,7 @@ function addElectrons(amount) {
   renderAtomGame();
 }
 
-electronTarget.addEventListener("click", () => {
+if (electronTarget) electronTarget.addEventListener("click", () => {
   addElectrons(clickPower());
   createElectronBurst();
   electronTarget.classList.remove("is-clicked");
@@ -309,7 +316,7 @@ electronTarget.addEventListener("click", () => {
   electronTarget.classList.add("is-clicked");
 });
 
-upgradeClick.addEventListener("click", () => {
+if (upgradeClick) upgradeClick.addEventListener("click", () => {
   const cost = upgradeCost(25, atomGame.clickLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
@@ -317,7 +324,7 @@ upgradeClick.addEventListener("click", () => {
   renderAtomGame();
 });
 
-upgradeAuto.addEventListener("click", () => {
+if (upgradeAuto) upgradeAuto.addEventListener("click", () => {
   const cost = upgradeCost(50, atomGame.autoLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
@@ -325,7 +332,7 @@ upgradeAuto.addEventListener("click", () => {
   renderAtomGame();
 });
 
-upgradeMagnet.addEventListener("click", () => {
+if (upgradeMagnet) upgradeMagnet.addEventListener("click", () => {
   const cost = upgradeCost(100, atomGame.magnetLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
@@ -333,20 +340,20 @@ upgradeMagnet.addEventListener("click", () => {
   renderAtomGame();
 });
 
-atomReset.addEventListener("click", () => {
+if (atomReset) atomReset.addEventListener("click", () => {
   if (!window.confirm("Das Elektronen-Spiel wirklich zurücksetzen?")) return;
   atomGame = { ...defaultAtomGame };
   renderAtomGame();
 });
 
-atomButton.addEventListener("click", () => {
+if (atomButton && atomGameDialog) atomButton.addEventListener("click", () => {
   renderAtomGame();
   atomGameDialog.showModal();
 });
 
-atomGameClose.addEventListener("click", () => atomGameDialog.close());
+if (atomGameClose) atomGameClose.addEventListener("click", () => atomGameDialog.close());
 
-atomGameDialog.addEventListener("click", (event) => {
+if (atomGameDialog) atomGameDialog.addEventListener("click", (event) => {
   if (event.target === atomGameDialog) atomGameDialog.close();
 });
 
