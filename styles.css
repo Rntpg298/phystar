@@ -692,6 +692,49 @@ input {
   animation: experiment-pulse 900ms ease;
 }
 
+#atom-game-dialog.is-click .electron-target {
+  animation: click-booster 700ms ease;
+}
+
+#atom-game-dialog.is-reactor .electron-clicker {
+  animation: reactor-breathe 900ms ease;
+}
+
+#atom-game-dialog.is-magnet .electron-orbits {
+  animation: magnet-pull 900ms ease, orbit-spin 8s linear infinite 900ms;
+}
+
+#atom-game-dialog.is-laser .electron-clicker::after,
+#atom-game-dialog.is-collider .electron-clicker::after,
+#atom-game-dialog.is-nobel .electron-clicker::after {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+#atom-game-dialog.is-laser .electron-clicker::after {
+  box-shadow: -260px 0 3px 2px #70d2dd, 260px 0 3px 2px #70d2dd;
+  animation: laser-flash 850ms ease;
+}
+
+#atom-game-dialog.is-collider .electron-clicker {
+  animation: collider-spin 850ms ease;
+}
+
+#atom-game-dialog.is-superconductor .electron-target {
+  box-shadow: 0 0 0 5px #69d6df, 0 0 42px rgba(105, 214, 223, 0.9);
+  animation: superconductor-glow 900ms ease;
+}
+
+#atom-game-dialog.is-nobel .electron-clicker {
+  animation: nobel-crown 950ms ease;
+}
+
 #atom-game-dialog[data-dream-level]:has([data-dream-level]) {}
 
 #atom-game-dialog[data-dream-level="1"] .electron-clicker,
@@ -731,6 +774,40 @@ input {
   25% { filter: hue-rotate(8deg) brightness(1.08); }
   50% { filter: hue-rotate(-5deg) brightness(1.02); }
   75% { filter: hue-rotate(4deg) brightness(1.06); }
+}
+
+@keyframes click-booster {
+  35% { transform: scale(1.18); }
+  65% { transform: scale(0.96); }
+}
+
+@keyframes reactor-breathe {
+  30% { box-shadow: inset 0 0 70px rgba(242, 185, 102, 0.28); }
+  65% { box-shadow: inset 0 0 35px rgba(105, 214, 223, 0.25); }
+}
+
+@keyframes magnet-pull {
+  50% { transform: scale(1.12) rotate(30deg); }
+}
+
+@keyframes laser-flash {
+  0% { opacity: 0; }
+  35% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes collider-spin {
+  50% { transform: scale(1.03) rotate(1deg); filter: hue-rotate(35deg); }
+}
+
+@keyframes superconductor-glow {
+  35% { filter: brightness(1.35); transform: scale(1.1); }
+  70% { filter: brightness(1.15); transform: scale(0.98); }
+}
+
+@keyframes nobel-crown {
+  30% { filter: sepia(0.25) brightness(1.12); transform: translateY(-5px); }
+  60% { filter: sepia(0) brightness(1.05); transform: translateY(2px); }
 }
 
 .atom-upgrade strong,
