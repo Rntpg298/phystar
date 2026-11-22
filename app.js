@@ -21,6 +21,7 @@ const privacyClose = document.getElementById("privacy-close");
 const atomButton = document.getElementById("atom-button");
 const atomGameDialog = document.getElementById("atom-game-dialog");
 const atomGameClose = document.getElementById("atom-game-close");
+const atomGameBack = document.getElementById("atom-game-back");
 const electronTarget = document.getElementById("electron-target");
 const atomScore = document.getElementById("atom-score");
 const atomRates = document.getElementById("atom-rates");
@@ -352,6 +353,7 @@ if (atomButton && atomGameDialog) atomButton.addEventListener("click", () => {
 });
 
 if (atomGameClose) atomGameClose.addEventListener("click", () => atomGameDialog.close());
+if (atomGameBack) atomGameBack.addEventListener("click", () => atomGameDialog.close());
 
 if (atomGameDialog) atomGameDialog.addEventListener("click", (event) => {
   if (event.target === atomGameDialog) atomGameDialog.close();
