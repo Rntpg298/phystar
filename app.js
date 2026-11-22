@@ -15,6 +15,9 @@ const manualButton = document.getElementById("manual-button");
 const manualDialog = document.getElementById("manual-dialog");
 const manualInput = document.getElementById("manual-input");
 const manualSubmit = document.getElementById("manual-submit");
+const privacyButton = document.getElementById("privacy-button");
+const privacyDialog = document.getElementById("privacy-dialog");
+const privacyClose = document.getElementById("privacy-close");
 
 function createStarfield() {
   const starfield = document.getElementById("starfield");
@@ -154,6 +157,12 @@ manualSubmit.addEventListener("click", (event) => {
 
 manualDialog.addEventListener("click", (event) => {
   if (event.target === manualDialog) manualDialog.close();
+});
+
+privacyButton.addEventListener("click", () => privacyDialog.showModal());
+privacyClose.addEventListener("click", () => privacyDialog.close());
+privacyDialog.addEventListener("click", (event) => {
+  if (event.target === privacyDialog) privacyDialog.close();
 });
 
 window.addEventListener("load", () => {
