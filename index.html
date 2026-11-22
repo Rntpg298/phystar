@@ -141,6 +141,36 @@
           <span id="dream-stage">PHYSIK-STUDENT</span>
           <small id="dream-progress">Erster Schritt: Elektronen sammeln</small>
         </div>
+        <div class="clicker-dashboard">
+          <button class="dashboard-action" id="daily-reward" type="button">
+            <span>TÄGLICH</span>
+            <strong id="daily-reward-value">500</strong>
+          </button>
+          <button class="dashboard-action" id="prestige-button" type="button" disabled>
+            <span>PRESTIGE</span>
+            <strong id="prestige-value">0 Stufen</strong>
+          </button>
+          <button class="dashboard-action" id="guide-button" type="button">
+            <span>PHYSIK-LEITFADEN</span>
+            <strong>Start</strong>
+          </button>
+          <button class="dashboard-action" id="sound-toggle" type="button">
+            <span>SOUND</span>
+            <strong id="sound-state">An</strong>
+          </button>
+        </div>
+        <div class="clicker-stats">
+          <span><b id="stat-clicks">0</b> Klicks</span>
+          <span><b id="stat-crit">0</b> Kritische Klicks</span>
+          <span><b id="stat-elements">0</b> Elemente</span>
+        </div>
+        <div class="quest-board" id="quest-board">
+          <div class="quest-header">
+            <strong>Quests</strong>
+            <small id="quest-summary">0 / 4 abgeschlossen</small>
+          </div>
+          <div class="quest-grid" id="quest-grid"></div>
+        </div>
         <div class="electron-clicker">
           <button class="electron-target" id="electron-target" type="button" aria-label="Elektron sammeln">
             <span class="electron-core" id="electron-core"><b id="electron-core-value">1</b></span>
@@ -206,6 +236,9 @@
             <b id="upgrade-nobel-cost">100 Mio.</b>
           </button>
         </div>
+        <p class="storage-warning" id="storage-warning" hidden>
+          Hinweis: Dieser Browser erlaubt keinen dauerhaften Speicherstand.
+        </p>
         <div class="element-progress">
           <div class="element-progress-header">
             <strong>Elemente</strong>
@@ -220,6 +253,35 @@
       </div>
     </dialog>
 
+    <dialog id="element-detail-dialog">
+      <div class="dialog-content element-detail-content">
+        <p class="privacy-kicker" id="element-detail-number">ELEMENT</p>
+        <h2 id="element-detail-name">Element</h2>
+        <div class="element-detail-symbol" id="element-detail-symbol">E</div>
+        <p id="element-detail-fact">Element-Information</p>
+        <div class="dialog-actions">
+          <button id="element-detail-close" type="button">Schließen</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="physics-guide-dialog">
+      <div class="dialog-content physics-guide-content">
+        <p class="privacy-kicker">PHYSIK-LEITFADEN</p>
+        <h2>Vom Klick zum Element</h2>
+        <ol>
+          <li><strong>Elektronen:</strong> Mit jedem Klick erzeugst du Elektronen.</li>
+          <li><strong>Reaktor:</strong> Pro Sekunde entstehen dauerhafte Produktionsraten.</li>
+          <li><strong>Orbitale:</strong> Mehr Klickstufen zeigen mehr Elektronenorbitale.</li>
+          <li><strong>Elemente:</strong> Gesammelte Lebenszeit-Elektronen schalten das Periodensystem frei.</li>
+          <li><strong>Prestige:</strong> Mit allen Elementen beginnt ein stärkerer neuer Zyklus.</li>
+        </ol>
+        <div class="dialog-actions">
+          <button id="physics-guide-close" type="button">Verstanden</button>
+        </div>
+      </div>
+    </dialog>
+
     <button class="privacy-button" id="privacy-button" type="button" title="Datenschutzhinweis" aria-label="Datenschutzhinweis">
       <span aria-hidden="true">i</span>
     </button>
@@ -229,6 +291,6 @@
     </button>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script src="app.js?v=phystar-clicker-final-20261122"></script>
+    <script src="app.js?v=phystar-full-game-20261122"></script>
   </body>
 </html>

@@ -39,6 +39,17 @@ const upgradeNobel = document.getElementById("upgrade-nobel");
 const electronCore = document.getElementById("electron-core");
 const electronCoreValue = document.getElementById("electron-core-value");
 const electronOrbits = document.getElementById("electron-orbits");
+const dailyReward = document.getElementById("daily-reward");
+const dailyRewardValue = document.getElementById("daily-reward-value");
+const prestigeButton = document.getElementById("prestige-button");
+const prestigeValue = document.getElementById("prestige-value");
+const guideButton = document.getElementById("guide-button");
+const guideDialog = document.getElementById("physics-guide-dialog");
+const guideClose = document.getElementById("physics-guide-close");
+const soundToggle = document.getElementById("sound-toggle");
+const soundState = document.getElementById("sound-state");
+const elementDetailDialog = document.getElementById("element-detail-dialog");
+const elementDetailClose = document.getElementById("element-detail-close");
 
 function createStarfield() {
   const starfield = document.getElementById("starfield");
@@ -202,7 +213,7 @@ const elements = [
 ];
 
 const defaultAtomGame = {
-  version: 2,
+  version: 3,
   electrons: 0,
   lifetime: 0,
   clickLevel: 0,
@@ -212,7 +223,20 @@ const defaultAtomGame = {
   laserLevel: 0,
   colliderLevel: 0,
   superconductorLevel: 0,
-  nobelLevel: 0
+  nobelLevel: 0,
+  prestigeLevel: 0,
+  totalClicks: 0,
+  criticalClicks: 0,
+  dailyClaimDate: "",
+  muted: false,
+  lastSavedAt: Date.now(),
+  offlineGain: 0,
+  questClaims: {
+    clicks: false,
+    lifetime: false,
+    upgrades: false,
+    elements: false
+  }
 };
 
 let atomGame = { ...defaultAtomGame };
@@ -221,7 +245,11 @@ const upgradeMaxLevel = 3;
 try {
   const savedGame = JSON.parse(localStorage.getItem("phystar-atom-game"));
   if (savedGame && savedGame.version === defaultAtomGame.version) {
-    atomGame = { ...defaultAtomGame, ...savedGame };
+    atomGame = {
+      ...defaultAtomGame,
+      ...savedGame,
+      questClaims: { ...defaultAtomGame.questClaims, ...(savedGame.questClaims || {}) }
+    };
   } else {
     atomGame = { ...defaultAtomGame };
   }
@@ -246,6 +274,10 @@ try {
 });
 atomGame.electrons = Math.max(0, Number.isFinite(atomGame.electrons) ? atomGame.electrons : 0);
 atomGame.lifetime = Math.max(0, Number.isFinite(atomGame.lifetime) ? atomGame.lifetime : 0);
+atomGame.prestigeLevel = Math.max(0, Number.isFinite(atomGame.prestigeLevel) ? atomGame.prestigeLevel : 0);
+atomGame.totalClicks = Math.max(0, Number.isFinite(atomGame.totalClicks) ? atomGame.totalClicks : 0);
+atomGame.criticalClicks = Math.max(0, Number.isFinite(atomGame.criticalClicks) ? atomGame.criticalClicks : 0);
+atomGame.offlineGain = Math.max(0, Number.isFinite(atomGame.offlineGain) ? atomGame.offlineGain : 0);
 
 function formatNumber(value) {
   if (value < 1000) {
@@ -275,7 +307,8 @@ function clickPower() {
   const laserMultiplier = 1 + atomGame.laserLevel * 0.25;
   const colliderMultiplier = Math.pow(2, atomGame.colliderLevel);
   const nobelMultiplier = Math.pow(10, atomGame.nobelLevel);
-  return (baseClick + magnetBonus) * fissionMultiplier * laserMultiplier * colliderMultiplier * nobelMultiplier;
+  const prestigeMultiplier = 1 + atomGame.prestigeLevel * 0.5;
+  return (baseClick + magnetBonus) * fissionMultiplier * laserMultiplier * colliderMultiplier * nobelMultiplier * prestigeMultiplier;
 }
 
 function autoPower() {
@@ -286,11 +319,179 @@ function autoPower() {
   const superconductorBonus = atomGame.superconductorLevel * 20;
   const laserMultiplier = 1 + atomGame.laserLevel * 0.25;
   const nobelMultiplier = Math.pow(10, atomGame.nobelLevel);
-  return (reactor + magnetCollectors + superconductorBonus) * fissionMultiplier * colliderMultiplier * laserMultiplier * nobelMultiplier;
+  const prestigeMultiplier = 1 + atomGame.prestigeLevel * 0.5;
+  return (reactor + magnetCollectors + superconductorBonus) * fissionMultiplier * colliderMultiplier * laserMultiplier * nobelMultiplier * prestigeMultiplier;
 }
 
 function saveAtomGame() {
-  localStorage.setItem("phystar-atom-game", JSON.stringify(atomGame));
+  atomGame.lastSavedAt = Date.now();
+  try {
+    localStorage.setItem("phystar-atom-game", JSON.stringify(atomGame));
+    const warning = document.getElementById("storage-warning");
+    if (warning) warning.hidden = true;
+  } catch {
+    const warning = document.getElementById("storage-warning");
+    if (warning) warning.hidden = false;
+  }
+}
+
+function applyOfflineProgress() {
+  const lastSaved = Number(atomGame.lastSavedAt || 0);
+  if (!lastSaved) return;
+  const elapsedSeconds = Math.max(
+    0,
+    Math.min(8 * 60 * 60, Math.floor((Date.now() - lastSaved) / 1000))
+  );
+  const offlineGain = autoPower() * elapsedSeconds * 0.25;
+  if (offlineGain > 0) {
+    atomGame.electrons += offlineGain;
+    atomGame.lifetime += offlineGain;
+    atomGame.offlineGain = offlineGain;
+    atomGame.lastSavedAt = Date.now();
+  }
+}
+
+applyOfflineProgress();
+
+const questDefinitions = [
+  {
+    key: "clicks",
+    title: "Erste Experimente",
+    description: "Führe 100 Klicks aus",
+    target: 100,
+    reward: 500,
+    progress: () => atomGame.totalClicks
+  },
+  {
+    key: "lifetime",
+    title: "Elektronen sammeln",
+    description: "Sammle 1.000 Elektronen insgesamt",
+    target: 1000,
+    reward: 750,
+    progress: () => atomGame.lifetime
+  },
+  {
+    key: "upgrades",
+    title: "Labor ausbauen",
+    description: "Kaufe insgesamt 3 Upgrade-Stufen",
+    target: 3,
+    reward: 1000,
+    progress: () =>
+      atomGame.clickLevel +
+      atomGame.autoLevel +
+      atomGame.magnetLevel +
+      atomGame.fissionLevel +
+      atomGame.laserLevel +
+      atomGame.colliderLevel +
+      atomGame.superconductorLevel +
+      atomGame.nobelLevel
+  },
+  {
+    key: "elements",
+    title: "Periodensystem",
+    description: "Schalte 10 Elemente frei",
+    target: 10,
+    reward: 1500,
+    progress: () => unlockedElementCount()
+  }
+];
+
+function questReady(quest) {
+  return quest.progress() >= quest.target;
+}
+
+function renderQuests() {
+  const questGrid = document.getElementById("quest-grid");
+  if (!questGrid) return;
+
+  questGrid.replaceChildren();
+  let completed = 0;
+
+  questDefinitions.forEach((quest) => {
+    const progress = quest.progress();
+    const ready = questReady(quest);
+    const claimed = atomGame.questClaims[quest.key];
+    if (claimed) completed += 1;
+
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = `quest-card${ready ? " is-ready" : ""}${claimed ? " is-claimed" : ""}`;
+    card.disabled = !ready || claimed;
+    card.innerHTML =
+      `<strong>${quest.title}</strong>` +
+      `<small>${quest.description}</small>` +
+      `<span>${Math.min(progress, quest.target)} / ${quest.target}</span>` +
+      `<b>${claimed ? "Fertig" : `+${formatNumber(quest.reward)}`}</b>`;
+    card.addEventListener("click", () => {
+      if (!questReady(quest) || atomGame.questClaims[quest.key]) return;
+      atomGame.questClaims[quest.key] = true;
+      atomGame.electrons += quest.reward;
+      atomGame.lifetime += quest.reward;
+      playSound("quest");
+      renderAtomGame();
+    });
+    questGrid.appendChild(card);
+  });
+
+  const questSummary = document.getElementById("quest-summary");
+  if (questSummary) questSummary.textContent = `${completed} / ${questDefinitions.length} abgeschlossen`;
+}
+
+function todayKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function renderDailyReward() {
+  if (!dailyReward) return;
+  const claimed = atomGame.dailyClaimDate === todayKey();
+  const reward = 500 * (1 + atomGame.prestigeLevel);
+  dailyReward.disabled = claimed;
+  if (dailyRewardValue) dailyRewardValue.textContent = claimed ? "Heute abgeholt" : formatNumber(reward);
+}
+
+if (dailyReward) {
+  dailyReward.addEventListener("click", () => {
+    if (atomGame.dailyClaimDate === todayKey()) return;
+    const reward = 500 * (1 + atomGame.prestigeLevel);
+    atomGame.dailyClaimDate = todayKey();
+    atomGame.electrons += reward;
+    atomGame.lifetime += reward;
+    playSound("quest");
+    renderAtomGame();
+  });
+}
+
+function renderPrestige() {
+  if (!prestigeButton) return;
+  const canPrestige = unlockedElementCount() >= 118;
+  prestigeButton.disabled = !canPrestige;
+  if (prestigeValue) {
+    prestigeValue.textContent = atomGame.prestigeLevel > 0
+      ? `${atomGame.prestigeLevel} Stufen · +50 %`
+      : "Alle Elemente nötig";
+  }
+}
+
+if (prestigeButton) {
+  prestigeButton.addEventListener("click", () => {
+    if (unlockedElementCount() < 118) return;
+    if (!window.confirm("Prestige starten? Elektronen und Upgrades werden zurückgesetzt. Elemente und Prägestufe bleiben erhalten.")) return;
+    atomGame.prestigeLevel += 1;
+    atomGame.electrons = 0;
+    atomGame.lifetime = 0;
+    atomGame.clickLevel = 0;
+    atomGame.autoLevel = 0;
+    atomGame.magnetLevel = 0;
+    atomGame.fissionLevel = 0;
+    atomGame.laserLevel = 0;
+    atomGame.colliderLevel = 0;
+    atomGame.superconductorLevel = 0;
+    atomGame.nobelLevel = 0;
+    atomGame.questClaims = { ...defaultAtomGame.questClaims };
+    playSound("prestige");
+    renderAtomGame();
+  });
 }
 
 function unlockedElementCount() {
@@ -301,10 +502,12 @@ function unlockedElementCount() {
   }, 0);
 }
 
-function createElectronBurst() {
+function createElectronBurst(isCritical = false) {
   const burst = document.createElement("span");
   burst.className = "electron-burst";
-  burst.textContent = `+${formatNumber(clickPower())}`;
+  burst.textContent = isCritical
+    ? `KRITISCH +${formatNumber(clickPower() * 5)}`
+    : `+${formatNumber(clickPower())}`;
   burst.style.left = "50%";
   burst.style.top = "50%";
   electronTarget.parentElement.appendChild(burst);
@@ -327,6 +530,20 @@ function renderElements() {
     tile.className = `element-tile${isUnlocked ? " is-unlocked" : ""}`;
     tile.title = isUnlocked ? name : `${name} · Freischaltung bei ${formatNumber(threshold)} Elektronen`;
     tile.innerHTML = `<span>${atomicNumber}</span><strong>${isUnlocked ? symbol : "?"}</strong><small>${isUnlocked ? name : formatNumber(threshold)}</small>`;
+    tile.addEventListener("click", () => {
+      if (!isUnlocked) return;
+      const number = document.getElementById("element-detail-number");
+      const nameElement = document.getElementById("element-detail-name");
+      const symbolElement = document.getElementById("element-detail-symbol");
+      const factElement = document.getElementById("element-detail-fact");
+      if (number) number.textContent = `ELEMENT ${atomicNumber}`;
+      if (nameElement) nameElement.textContent = name;
+      if (symbolElement) symbolElement.textContent = symbol;
+      if (factElement) factElement.textContent =
+        `${name} ist das ${atomicNumber}. Element im Periodensystem. Mit seinem Symbol ${symbol} gehört es zu den Bausteinen der Chemie und Physik.`;
+      if (elementDetailDialog) elementDetailDialog.showModal();
+      playSound("quest");
+    });
     elementGrid.appendChild(tile);
   });
 
@@ -374,7 +591,9 @@ function renderPhysicistDream() {
 
 function renderAtomGame() {
   atomScore.textContent = formatNumber(atomGame.electrons);
-  atomRates.textContent = `+${formatNumber(clickPower())} pro Klick · ${formatNumber(autoPower())} pro Sekunde`;
+  atomRates.textContent =
+    `+${formatNumber(clickPower())} pro Klick · ${formatNumber(autoPower())} pro Sekunde` +
+    (atomGame.offlineGain > 0 ? ` · Offline +${formatNumber(atomGame.offlineGain)}` : "");
   if (electronCoreValue) electronCoreValue.textContent = formatNumber(clickPower());
   if (electronCore) {
     const visualLevel = Math.min(5, atomGame.clickLevel + atomGame.magnetLevel + atomGame.fissionLevel);
@@ -446,6 +665,16 @@ function renderAtomGame() {
   });
   renderElements();
   renderPhysicistDream();
+  renderQuests();
+  renderDailyReward();
+  renderPrestige();
+  const statClicks = document.getElementById("stat-clicks");
+  const statCrit = document.getElementById("stat-crit");
+  const statElements = document.getElementById("stat-elements");
+  if (statClicks) statClicks.textContent = formatNumber(atomGame.totalClicks);
+  if (statCrit) statCrit.textContent = formatNumber(atomGame.criticalClicks);
+  if (statElements) statElements.textContent = String(unlockedElementCount());
+  if (soundState) soundState.textContent = atomGame.muted ? "Aus" : "An";
   saveAtomGame();
 }
 
@@ -477,9 +706,41 @@ function playUpgradeEffect(effect) {
   window.setTimeout(() => atomGameDialog.classList.remove(effectClass), 950);
 }
 
+let audioContext = null;
+
+function playSound(type) {
+  if (atomGame.muted) return;
+  try {
+    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const frequencies = {
+      click: 340,
+      critical: 760,
+      quest: 620,
+      prestige: 880
+    };
+    oscillator.type = type === "critical" || type === "prestige" ? "triangle" : "sine";
+    oscillator.frequency.value = frequencies[type] || 440;
+    gain.gain.setValueAtTime(0.035, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.12);
+  } catch {
+    atomGame.muted = true;
+  }
+}
+
 if (electronTarget) electronTarget.addEventListener("click", () => {
-  addElectrons(clickPower());
-  createElectronBurst();
+  atomGame.totalClicks += 1;
+  const isCritical = Math.random() < 0.1;
+  const gained = clickPower() * (isCritical ? 5 : 1);
+  if (isCritical) atomGame.criticalClicks += 1;
+  addElectrons(gained);
+  createElectronBurst(isCritical);
+  playSound(isCritical ? "critical" : "click");
   electronTarget.classList.remove("is-clicked");
   void electronTarget.offsetWidth;
   electronTarget.classList.add("is-clicked");
@@ -555,6 +816,26 @@ buyAdvancedUpgrade(upgradeLaser, "laserLevel", () => upgradeCost(100000, atomGam
 buyAdvancedUpgrade(upgradeCollider, "colliderLevel", () => upgradeCost(1000000, atomGame.colliderLevel));
 buyAdvancedUpgrade(upgradeSuperconductor, "superconductorLevel", () => upgradeCost(10000000, atomGame.superconductorLevel));
 buyAdvancedUpgrade(upgradeNobel, "nobelLevel", () => upgradeCost(100000000, atomGame.nobelLevel));
+
+if (soundToggle) {
+  soundToggle.addEventListener("click", () => {
+    atomGame.muted = !atomGame.muted;
+    if (soundState) soundState.textContent = atomGame.muted ? "Aus" : "An";
+    saveAtomGame();
+  });
+}
+
+if (guideButton && guideDialog) {
+  guideButton.addEventListener("click", () => guideDialog.showModal());
+}
+
+if (guideClose && guideDialog) {
+  guideClose.addEventListener("click", () => guideDialog.close());
+}
+
+if (elementDetailClose && elementDetailDialog) {
+  elementDetailClose.addEventListener("click", () => elementDetailDialog.close());
+}
 
 if (atomReset) atomReset.addEventListener("click", () => {
   if (!window.confirm("Das Elektronen-Spiel wirklich zurücksetzen?")) return;
