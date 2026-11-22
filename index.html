@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17143b" />
+    <title>Phystar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=phystar-20261122-2" />
+  </head>
+  <body>
+    <div class="starfield" id="starfield" aria-hidden="true"></div>
+    <main class="app">
+      <section class="scanner-panel" aria-label="QR-Code-Scanner">
+        <header class="topbar">
+          <div class="brand" aria-label="Phystar">
+            <span class="brand-mark" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </span>
+            <span>Phystar<span class="brand-divider"> ✦ </span></span>
+          </div>
+          <span class="status" id="status">Bereit</span>
+        </header>
+
+        <div class="lab-intro">
+          <div>
+            <p class="lab-kicker">DEIN PHYSIK-ABENTEUER <span>START</span></p>
+            <h2>Scannen.<br />Staunen. Wissen.</h2>
+            <p class="lab-caption">Scanne eine Phystar-Karte und entdecke das Physik-Phänomen dahinter.</p>
+          </div>
+          <svg class="atom-art" viewBox="0 0 120 120" aria-hidden="true">
+            <ellipse cx="60" cy="60" rx="48" ry="19" />
+            <ellipse cx="60" cy="60" rx="48" ry="19" transform="rotate(60 60 60)" />
+            <ellipse cx="60" cy="60" rx="48" ry="19" transform="rotate(120 60 60)" />
+            <circle class="atom-core" cx="60" cy="60" r="5" />
+            <circle class="atom-electron" cx="107" cy="60" r="3.5" />
+          </svg>
+        </div>
+
+        <div class="scanner-wrap">
+          <div id="reader"></div>
+          <div class="scanner-overlay" aria-hidden="true">
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+            <div class="scan-line"></div>
+          </div>
+          <button class="camera-button" id="camera-button" type="button">
+            Kamera starten
+          </button>
+        </div>
+
+        <p class="hint" id="hint">Halte den QR-Code in den Rahmen.</p>
+      </section>
+
+      <section class="result-panel" aria-live="polite">
+        <article class="result-card" id="result-card">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <p class="eyebrow">Physik-Karte</p>
+            <span class="card-number" id="card-number">--</span>
+          </div>
+
+          <div class="card-body" id="card-body">
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="50" rx="38" ry="15" />
+                    <ellipse cx="50" cy="50" rx="38" ry="15" transform="rotate(60 50 50)" />
+                    <ellipse cx="50" cy="50" rx="38" ry="15" transform="rotate(120 50 50)" />
+                    <circle class="atom-core" cx="50" cy="50" r="5" />
+                    <circle class="atom-electron" cx="87" cy="50" r="4" />
+                </svg>
+              </div>
+                <p class="empty-index">PHYSIK-PHÄNOMEN <span>✦</span> BEREIT ZUM SCAN</p>
+                <h1>Was steckt<br />in der Karte?</h1>
+                <p>Scanne den QR-Code auf einer Phystar-Karte. Das passende physikalische Phänomen erscheint hier.</p>
+            </div>
+
+            <div class="content-state" id="content-state" hidden>
+                <p class="eyebrow" id="card-kind">Physikalischer Begriff / Phänomen</p>
+              <h1 id="card-title">QR-Code</h1>
+              <p class="card-text" id="card-text"></p>
+              <a class="card-link" id="card-link" href="#" target="_blank" rel="noopener" hidden>
+                Seite öffnen
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+
+          <footer class="card-footer">
+            <span id="scan-time">Warte auf Scan</span>
+            <span class="success-dot" id="success-dot" aria-hidden="true"></span>
+          </footer>
+        </article>
+      </section>
+    </main>
+
+    <dialog id="manual-dialog">
+      <form method="dialog" class="dialog-content">
+        <label for="manual-input">QR-Inhalt testen</label>
+        <input id="manual-input" type="text" placeholder="Text oder URL eingeben" />
+        <div class="dialog-actions">
+          <button value="cancel" class="secondary-button">Abbrechen</button>
+          <button id="manual-submit" value="default">Anzeigen</button>
+        </div>
+      </form>
+    </dialog>
+
+    <button class="manual-button" id="manual-button" type="button" title="QR-Code manuell testen">
+      <span aria-hidden="true">+</span>
+    </button>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="app.js?v=phystar-20261122"></script>
+  </body>
+</html>
