@@ -238,7 +238,7 @@ function upgradeCost(baseCost, level) {
 function clickPower() {
   const baseClick = 1 + atomGame.clickLevel;
   const magnetBonus = baseClick * atomGame.magnetLevel * 0.1;
-  const fissionMultiplier = Math.pow(5, atomGame.fissionLevel);
+  const fissionMultiplier = Math.pow(2, Math.min(3, atomGame.fissionLevel));
   const laserMultiplier = 1 + atomGame.laserLevel * 0.25;
   const colliderMultiplier = Math.pow(2, atomGame.colliderLevel);
   const nobelMultiplier = Math.pow(10, atomGame.nobelLevel);
@@ -248,7 +248,7 @@ function clickPower() {
 function autoPower() {
   const reactor = atomGame.autoLevel;
   const magnetCollectors = atomGame.magnetLevel;
-  const fissionMultiplier = Math.pow(10, atomGame.fissionLevel);
+  const fissionMultiplier = Math.pow(2, Math.min(3, atomGame.fissionLevel));
   const colliderMultiplier = Math.pow(2, atomGame.colliderLevel);
   const superconductorBonus = atomGame.superconductorLevel * 20;
   const laserMultiplier = 1 + atomGame.laserLevel * 0.25;
@@ -362,7 +362,7 @@ function renderAtomGame() {
   const clickCost = upgradeCost(25, atomGame.clickLevel);
   const autoCost = upgradeCost(50, atomGame.autoLevel);
   const magnetCost = upgradeCost(100, atomGame.magnetLevel);
-  const fissionCost = upgradeCost(2500, atomGame.fissionLevel);
+  const fissionCost = atomGame.fissionLevel >= 3 ? Infinity : upgradeCost(7500, atomGame.fissionLevel);
   const laserCost = upgradeCost(10000, atomGame.laserLevel);
   const colliderCost = upgradeCost(75000, atomGame.colliderLevel);
   const superconductorCost = upgradeCost(500000, atomGame.superconductorLevel);
@@ -371,7 +371,9 @@ function renderAtomGame() {
   document.getElementById("upgrade-click-level").textContent = `Stufe ${atomGame.clickLevel} · +1 pro Klick`;
   document.getElementById("upgrade-auto-level").textContent = `Stufe ${atomGame.autoLevel} · +1 pro Sekunde`;
   document.getElementById("upgrade-magnet-level").textContent = `Stufe ${atomGame.magnetLevel} · +10 % Klickkraft + 1 Sammler`;
-  document.getElementById("upgrade-fission-level").textContent = `Stufe ${atomGame.fissionLevel} · ×5 Klickkraft und ×10 Automatik`;
+  document.getElementById("upgrade-fission-level").textContent = atomGame.fissionLevel >= 3
+    ? "Maximale Stufe · Kernlabor stabil"
+    : `Stufe ${atomGame.fissionLevel} · ×2 Kraft, maximal 3 Stufen`;
   document.getElementById("upgrade-laser-level").textContent = `Stufe ${atomGame.laserLevel} · +25 % gesamte Kraft`;
   document.getElementById("upgrade-collider-level").textContent = `Stufe ${atomGame.colliderLevel} · ×2 pro Klick und Sekunde`;
   document.getElementById("upgrade-superconductor-level").textContent = `Stufe ${atomGame.superconductorLevel} · +20 pro Sekunde`;
@@ -379,7 +381,8 @@ function renderAtomGame() {
   document.getElementById("upgrade-click-cost").textContent = formatNumber(clickCost);
   document.getElementById("upgrade-auto-cost").textContent = formatNumber(autoCost);
   document.getElementById("upgrade-magnet-cost").textContent = formatNumber(magnetCost);
-  document.getElementById("upgrade-fission-cost").textContent = formatNumber(fissionCost);
+  document.getElementById("upgrade-fission-cost").textContent =
+    atomGame.fissionLevel >= 3 ? "MAX" : formatNumber(fissionCost);
   document.getElementById("upgrade-laser-cost").textContent = formatNumber(laserCost);
   document.getElementById("upgrade-collider-cost").textContent = formatNumber(colliderCost);
   document.getElementById("upgrade-superconductor-cost").textContent = formatNumber(superconductorCost);
@@ -388,7 +391,8 @@ function renderAtomGame() {
   upgradeClick.disabled = atomGame.electrons < clickCost;
   upgradeAuto.disabled = atomGame.electrons < autoCost;
   upgradeMagnet.disabled = atomGame.electrons < magnetCost;
-  upgradeFission.disabled = atomGame.electrons < fissionCost;
+  upgradeFission.disabled =
+    atomGame.fissionLevel >= 3 || atomGame.electrons < fissionCost;
   upgradeLaser.disabled = atomGame.electrons < laserCost;
   upgradeCollider.disabled = atomGame.electrons < colliderCost;
   upgradeSuperconductor.disabled = atomGame.electrons < superconductorCost;
@@ -453,7 +457,8 @@ if (upgradeMagnet) upgradeMagnet.addEventListener("click", () => {
 });
 
 if (upgradeFission) upgradeFission.addEventListener("click", () => {
-  const cost = upgradeCost(2500, atomGame.fissionLevel);
+  if (atomGame.fissionLevel >= 3) return;
+  const cost = upgradeCost(7500, atomGame.fissionLevel);
   if (atomGame.electrons < cost) return;
   atomGame.electrons -= cost;
   atomGame.fissionLevel += 1;
