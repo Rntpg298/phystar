@@ -140,6 +140,7 @@
         <div class="electron-clicker">
           <button class="electron-target" id="electron-target" type="button" aria-label="Elektron sammeln">
             <span class="electron-core" id="electron-core"><b id="electron-core-value">1</b></span>
+            <span class="electron-orbits" id="electron-orbits" aria-hidden="true"></span>
           </button>
           <p id="atom-rates">+1 pro Klick · 0 pro Sekunde</p>
         </div>
@@ -161,9 +162,16 @@
           <button class="atom-upgrade" id="upgrade-magnet" type="button">
             <span>
               <strong>Element-Magnet</strong>
-              <small id="upgrade-magnet-level">Stufe 0 · +10 % Klickkraft</small>
+              <small id="upgrade-magnet-level">Stufe 0 · +10 % Klickkraft + 1 Sammler</small>
             </span>
             <b id="upgrade-magnet-cost">100</b>
+          </button>
+          <button class="atom-upgrade" id="upgrade-fission" type="button">
+            <span>
+              <strong>Kernspaltung</strong>
+              <small id="upgrade-fission-level">Stufe 0 · ×5 Klickkraft und ×10 Automatik</small>
+            </span>
+            <b id="upgrade-fission-cost">2.500</b>
           </button>
         </div>
         <div class="element-progress">

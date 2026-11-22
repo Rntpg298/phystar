@@ -31,8 +31,10 @@ const atomReset = document.getElementById("atom-reset");
 const upgradeClick = document.getElementById("upgrade-click");
 const upgradeAuto = document.getElementById("upgrade-auto");
 const upgradeMagnet = document.getElementById("upgrade-magnet");
+const upgradeFission = document.getElementById("upgrade-fission");
 const electronCore = document.getElementById("electron-core");
 const electronCoreValue = document.getElementById("electron-core-value");
+const electronOrbits = document.getElementById("electron-orbits");
 
 function createStarfield() {
   const starfield = document.getElementById("starfield");
@@ -200,7 +202,8 @@ const defaultAtomGame = {
   lifetime: 0,
   clickLevel: 0,
   autoLevel: 0,
-  magnetLevel: 0
+  magnetLevel: 0,
+  fissionLevel: 0
 };
 
 let atomGame = { ...defaultAtomGame };
@@ -225,11 +228,17 @@ function upgradeCost(baseCost, level) {
 }
 
 function clickPower() {
-  return (1 + atomGame.clickLevel) * (1 + atomGame.magnetLevel * 0.1);
+  const baseClick = 1 + atomGame.clickLevel;
+  const magnetBonus = baseClick * atomGame.magnetLevel * 0.1;
+  const fissionMultiplier = Math.pow(5, atomGame.fissionLevel);
+  return (baseClick + magnetBonus) * fissionMultiplier;
 }
 
 function autoPower() {
-  return atomGame.autoLevel;
+  const reactor = atomGame.autoLevel;
+  const magnetCollectors = atomGame.magnetLevel;
+  const fissionMultiplier = Math.pow(10, atomGame.fissionLevel);
+  return (reactor + magnetCollectors) * fissionMultiplier;
 }
 
 function saveAtomGame() {
@@ -281,24 +290,39 @@ function renderAtomGame() {
   atomRates.textContent = `+${formatNumber(clickPower())} pro Klick · ${formatNumber(autoPower())} pro Sekunde`;
   if (electronCoreValue) electronCoreValue.textContent = formatNumber(clickPower());
   if (electronCore) {
-    const visualLevel = Math.min(5, atomGame.clickLevel + atomGame.magnetLevel);
+    const visualLevel = Math.min(5, atomGame.clickLevel + atomGame.magnetLevel + atomGame.fissionLevel);
     electronCore.dataset.level = String(visualLevel);
+  }
+  if (electronOrbits) {
+    electronOrbits.replaceChildren();
+    const orbitCount = Math.min(8, 1 + atomGame.clickLevel);
+    for (let index = 0; index < orbitCount; index += 1) {
+      const satellite = document.createElement("span");
+      satellite.className = "orbit-electron";
+      satellite.style.setProperty("--orbit-index", String(index));
+      satellite.style.setProperty("--orbit-count", String(orbitCount));
+      electronOrbits.appendChild(satellite);
+    }
   }
 
   const clickCost = upgradeCost(25, atomGame.clickLevel);
   const autoCost = upgradeCost(50, atomGame.autoLevel);
   const magnetCost = upgradeCost(100, atomGame.magnetLevel);
+  const fissionCost = upgradeCost(2500, atomGame.fissionLevel);
 
   document.getElementById("upgrade-click-level").textContent = `Stufe ${atomGame.clickLevel} · +1 pro Klick`;
   document.getElementById("upgrade-auto-level").textContent = `Stufe ${atomGame.autoLevel} · +1 pro Sekunde`;
-  document.getElementById("upgrade-magnet-level").textContent = `Stufe ${atomGame.magnetLevel} · +10 % Klickkraft`;
+  document.getElementById("upgrade-magnet-level").textContent = `Stufe ${atomGame.magnetLevel} · +10 % Klickkraft + 1 Sammler`;
+  document.getElementById("upgrade-fission-level").textContent = `Stufe ${atomGame.fissionLevel} · ×5 Klickkraft und ×10 Automatik`;
   document.getElementById("upgrade-click-cost").textContent = formatNumber(clickCost);
   document.getElementById("upgrade-auto-cost").textContent = formatNumber(autoCost);
   document.getElementById("upgrade-magnet-cost").textContent = formatNumber(magnetCost);
+  document.getElementById("upgrade-fission-cost").textContent = formatNumber(fissionCost);
 
   upgradeClick.disabled = atomGame.electrons < clickCost;
   upgradeAuto.disabled = atomGame.electrons < autoCost;
   upgradeMagnet.disabled = atomGame.electrons < magnetCost;
+  upgradeFission.disabled = atomGame.electrons < fissionCost;
   renderElements();
   saveAtomGame();
 }
@@ -307,6 +331,19 @@ function addElectrons(amount) {
   atomGame.electrons += amount;
   atomGame.lifetime += amount;
   renderAtomGame();
+}
+
+function animateUpgrade(button) {
+  if (!button) return;
+  button.classList.remove("is-purchased");
+  void button.offsetWidth;
+  button.classList.add("is-purchased");
+  window.setTimeout(() => button.classList.remove("is-purchased"), 650);
+
+  electronTarget.classList.remove("is-shaking");
+  void electronTarget.offsetWidth;
+  electronTarget.classList.add("is-shaking");
+  window.setTimeout(() => electronTarget.classList.remove("is-shaking"), 650);
 }
 
 if (electronTarget) electronTarget.addEventListener("click", () => {
@@ -323,6 +360,7 @@ if (upgradeClick) upgradeClick.addEventListener("click", () => {
   atomGame.electrons -= cost;
   atomGame.clickLevel += 1;
   renderAtomGame();
+  animateUpgrade(upgradeClick);
 });
 
 if (upgradeAuto) upgradeAuto.addEventListener("click", () => {
@@ -331,6 +369,7 @@ if (upgradeAuto) upgradeAuto.addEventListener("click", () => {
   atomGame.electrons -= cost;
   atomGame.autoLevel += 1;
   renderAtomGame();
+  animateUpgrade(upgradeAuto);
 });
 
 if (upgradeMagnet) upgradeMagnet.addEventListener("click", () => {
@@ -339,6 +378,20 @@ if (upgradeMagnet) upgradeMagnet.addEventListener("click", () => {
   atomGame.electrons -= cost;
   atomGame.magnetLevel += 1;
   renderAtomGame();
+  animateUpgrade(upgradeMagnet);
+});
+
+if (upgradeFission) upgradeFission.addEventListener("click", () => {
+  const cost = upgradeCost(2500, atomGame.fissionLevel);
+  if (atomGame.electrons < cost) return;
+  atomGame.electrons -= cost;
+  atomGame.fissionLevel += 1;
+  renderAtomGame();
+  animateUpgrade(upgradeFission);
+  atomGameDialog.classList.remove("is-fission");
+  void atomGameDialog.offsetWidth;
+  atomGameDialog.classList.add("is-fission");
+  window.setTimeout(() => atomGameDialog.classList.remove("is-fission"), 850);
 });
 
 if (atomReset) atomReset.addEventListener("click", () => {

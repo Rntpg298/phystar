@@ -517,6 +517,35 @@ input {
   animation: electron-click 120ms ease-out;
 }
 
+.electron-target.is-shaking {
+  animation: electron-shake 620ms ease;
+}
+
+.electron-orbits {
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: orbit-spin 8s linear infinite;
+}
+
+.orbit-electron {
+  --angle: calc(var(--orbit-index) * 360deg / var(--orbit-count));
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #70d2dd;
+  box-shadow: 0 0 10px rgba(112, 210, 221, 0.9);
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--angle))
+    translateX(72px);
+  transform-origin: center;
+}
+
 .electron-core {
   width: 44px;
   height: 44px;
@@ -570,13 +599,25 @@ input {
   50% { transform: scale(0.88); }
 }
 
+@keyframes electron-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-8px) rotate(-3deg); }
+  40% { transform: translateX(8px) rotate(3deg); }
+  60% { transform: translateX(-5px) rotate(-2deg); }
+  80% { transform: translateX(5px) rotate(2deg); }
+}
+
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes electron-burst {
   to { transform: translate(-50%, -78px); opacity: 0; }
 }
 
 .atom-upgrades {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -598,6 +639,27 @@ input {
 .atom-upgrade:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.atom-upgrade.is-purchased {
+  animation: upgrade-pop 620ms ease;
+  border-color: #69d6df;
+  box-shadow: 0 0 0 4px rgba(105, 214, 223, 0.12);
+}
+
+#atom-game-dialog.is-fission {
+  animation: fission-flash 850ms ease;
+}
+
+@keyframes upgrade-pop {
+  35% { transform: scale(1.04); }
+  70% { transform: translateY(-3px); }
+}
+
+@keyframes fission-flash {
+  20% { filter: brightness(1.15) saturate(1.2); }
+  45% { filter: brightness(0.92); }
+  70% { filter: brightness(1.08); }
 }
 
 .atom-upgrade strong,
@@ -765,6 +827,10 @@ dialog::backdrop {
 @media (max-width: 820px) {
   .element-grid {
     grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+
+  .atom-upgrades {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .app {
