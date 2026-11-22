@@ -32,6 +32,10 @@ const upgradeClick = document.getElementById("upgrade-click");
 const upgradeAuto = document.getElementById("upgrade-auto");
 const upgradeMagnet = document.getElementById("upgrade-magnet");
 const upgradeFission = document.getElementById("upgrade-fission");
+const upgradeLaser = document.getElementById("upgrade-laser");
+const upgradeCollider = document.getElementById("upgrade-collider");
+const upgradeSuperconductor = document.getElementById("upgrade-superconductor");
+const upgradeNobel = document.getElementById("upgrade-nobel");
 const electronCore = document.getElementById("electron-core");
 const electronCoreValue = document.getElementById("electron-core-value");
 const electronOrbits = document.getElementById("electron-orbits");
@@ -203,7 +207,11 @@ const defaultAtomGame = {
   clickLevel: 0,
   autoLevel: 0,
   magnetLevel: 0,
-  fissionLevel: 0
+  fissionLevel: 0,
+  laserLevel: 0,
+  colliderLevel: 0,
+  superconductorLevel: 0,
+  nobelLevel: 0
 };
 
 let atomGame = { ...defaultAtomGame };
@@ -231,14 +239,21 @@ function clickPower() {
   const baseClick = 1 + atomGame.clickLevel;
   const magnetBonus = baseClick * atomGame.magnetLevel * 0.1;
   const fissionMultiplier = Math.pow(5, atomGame.fissionLevel);
-  return (baseClick + magnetBonus) * fissionMultiplier;
+  const laserMultiplier = 1 + atomGame.laserLevel * 0.25;
+  const colliderMultiplier = Math.pow(2, atomGame.colliderLevel);
+  const nobelMultiplier = Math.pow(10, atomGame.nobelLevel);
+  return (baseClick + magnetBonus) * fissionMultiplier * laserMultiplier * colliderMultiplier * nobelMultiplier;
 }
 
 function autoPower() {
   const reactor = atomGame.autoLevel;
   const magnetCollectors = atomGame.magnetLevel;
   const fissionMultiplier = Math.pow(10, atomGame.fissionLevel);
-  return (reactor + magnetCollectors) * fissionMultiplier;
+  const colliderMultiplier = Math.pow(2, atomGame.colliderLevel);
+  const superconductorBonus = atomGame.superconductorLevel * 20;
+  const laserMultiplier = 1 + atomGame.laserLevel * 0.25;
+  const nobelMultiplier = Math.pow(10, atomGame.nobelLevel);
+  return (reactor + magnetCollectors + superconductorBonus) * fissionMultiplier * colliderMultiplier * laserMultiplier * nobelMultiplier;
 }
 
 function saveAtomGame() {
@@ -285,6 +300,45 @@ function renderElements() {
   elementProgressText.textContent = `${unlocked} / 118 freigeschaltet`;
 }
 
+function renderPhysicistDream() {
+  const stageElement = document.getElementById("dream-stage");
+  const progressElement = document.getElementById("dream-progress");
+  if (!stageElement || !progressElement) return;
+
+  let stage = "PHYSIK-STUDENT";
+  let progress = "Erster Schritt: Elektronen sammeln";
+  if (atomGame.lifetime >= 100) {
+    stage = "LABOR-ASSISTENT";
+    progress = "Das erste Physik-Labor erwacht";
+  }
+  if (atomGame.fissionLevel > 0) {
+    stage = "KERNPHYSIKER";
+    progress = "Kernspaltung beherrscht";
+  }
+  if (atomGame.colliderLevel > 0) {
+    stage = "TEILCHENFORSCHER";
+    progress = "Teilchen werden beschleunigt";
+  }
+  if (atomGame.superconductorLevel > 0) {
+    stage = "QUANTEN-FORSCHER";
+    progress = "Supraleitung stabilisiert das Labor";
+  }
+  if (atomGame.nobelLevel > 0) {
+    stage = "NOBELPREIS-TRAUM";
+    progress = "Eine große Entdeckung ist zum Greifen nah";
+  }
+
+  stageElement.textContent = stage;
+  progressElement.textContent = progress;
+  const dreamLevel =
+    atomGame.fissionLevel +
+    atomGame.laserLevel +
+    atomGame.colliderLevel * 2 +
+    atomGame.superconductorLevel * 2 +
+    atomGame.nobelLevel * 3;
+  atomGameDialog.dataset.dreamLevel = String(Math.min(8, dreamLevel));
+}
+
 function renderAtomGame() {
   atomScore.textContent = formatNumber(atomGame.electrons);
   atomRates.textContent = `+${formatNumber(clickPower())} pro Klick · ${formatNumber(autoPower())} pro Sekunde`;
@@ -309,21 +363,38 @@ function renderAtomGame() {
   const autoCost = upgradeCost(50, atomGame.autoLevel);
   const magnetCost = upgradeCost(100, atomGame.magnetLevel);
   const fissionCost = upgradeCost(2500, atomGame.fissionLevel);
+  const laserCost = upgradeCost(10000, atomGame.laserLevel);
+  const colliderCost = upgradeCost(75000, atomGame.colliderLevel);
+  const superconductorCost = upgradeCost(500000, atomGame.superconductorLevel);
+  const nobelCost = upgradeCost(5000000, atomGame.nobelLevel);
 
   document.getElementById("upgrade-click-level").textContent = `Stufe ${atomGame.clickLevel} · +1 pro Klick`;
   document.getElementById("upgrade-auto-level").textContent = `Stufe ${atomGame.autoLevel} · +1 pro Sekunde`;
   document.getElementById("upgrade-magnet-level").textContent = `Stufe ${atomGame.magnetLevel} · +10 % Klickkraft + 1 Sammler`;
   document.getElementById("upgrade-fission-level").textContent = `Stufe ${atomGame.fissionLevel} · ×5 Klickkraft und ×10 Automatik`;
+  document.getElementById("upgrade-laser-level").textContent = `Stufe ${atomGame.laserLevel} · +25 % gesamte Kraft`;
+  document.getElementById("upgrade-collider-level").textContent = `Stufe ${atomGame.colliderLevel} · ×2 pro Klick und Sekunde`;
+  document.getElementById("upgrade-superconductor-level").textContent = `Stufe ${atomGame.superconductorLevel} · +20 pro Sekunde`;
+  document.getElementById("upgrade-nobel-level").textContent = `Stufe ${atomGame.nobelLevel} · ×10 gesamte Kraft`;
   document.getElementById("upgrade-click-cost").textContent = formatNumber(clickCost);
   document.getElementById("upgrade-auto-cost").textContent = formatNumber(autoCost);
   document.getElementById("upgrade-magnet-cost").textContent = formatNumber(magnetCost);
   document.getElementById("upgrade-fission-cost").textContent = formatNumber(fissionCost);
+  document.getElementById("upgrade-laser-cost").textContent = formatNumber(laserCost);
+  document.getElementById("upgrade-collider-cost").textContent = formatNumber(colliderCost);
+  document.getElementById("upgrade-superconductor-cost").textContent = formatNumber(superconductorCost);
+  document.getElementById("upgrade-nobel-cost").textContent = formatNumber(nobelCost);
 
   upgradeClick.disabled = atomGame.electrons < clickCost;
   upgradeAuto.disabled = atomGame.electrons < autoCost;
   upgradeMagnet.disabled = atomGame.electrons < magnetCost;
   upgradeFission.disabled = atomGame.electrons < fissionCost;
+  upgradeLaser.disabled = atomGame.electrons < laserCost;
+  upgradeCollider.disabled = atomGame.electrons < colliderCost;
+  upgradeSuperconductor.disabled = atomGame.electrons < superconductorCost;
+  upgradeNobel.disabled = atomGame.electrons < nobelCost;
   renderElements();
+  renderPhysicistDream();
   saveAtomGame();
 }
 
@@ -393,6 +464,26 @@ if (upgradeFission) upgradeFission.addEventListener("click", () => {
   atomGameDialog.classList.add("is-fission");
   window.setTimeout(() => atomGameDialog.classList.remove("is-fission"), 850);
 });
+
+function buyAdvancedUpgrade(upgrade, stateKey, cost) {
+  if (!upgrade) return;
+  upgrade.addEventListener("click", () => {
+    if (atomGame.electrons < cost()) return;
+    atomGame.electrons -= cost();
+    atomGame[stateKey] += 1;
+    renderAtomGame();
+    animateUpgrade(upgrade);
+    atomGameDialog.classList.remove("is-experiment");
+    void atomGameDialog.offsetWidth;
+    atomGameDialog.classList.add("is-experiment");
+    window.setTimeout(() => atomGameDialog.classList.remove("is-experiment"), 900);
+  });
+}
+
+buyAdvancedUpgrade(upgradeLaser, "laserLevel", () => upgradeCost(10000, atomGame.laserLevel));
+buyAdvancedUpgrade(upgradeCollider, "colliderLevel", () => upgradeCost(75000, atomGame.colliderLevel));
+buyAdvancedUpgrade(upgradeSuperconductor, "superconductorLevel", () => upgradeCost(500000, atomGame.superconductorLevel));
+buyAdvancedUpgrade(upgradeNobel, "nobelLevel", () => upgradeCost(5000000, atomGame.nobelLevel));
 
 if (atomReset) atomReset.addEventListener("click", () => {
   if (!window.confirm("Das Elektronen-Spiel wirklich zurücksetzen?")) return;
