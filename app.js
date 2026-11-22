@@ -215,6 +215,7 @@ const defaultAtomGame = {
 };
 
 let atomGame = { ...defaultAtomGame };
+const upgradeMaxLevel = 3;
 
 try {
   const savedGame = JSON.parse(localStorage.getItem("phystar-atom-game"));
@@ -222,6 +223,24 @@ try {
 } catch {
   atomGame = { ...defaultAtomGame };
 }
+
+[
+  "clickLevel",
+  "autoLevel",
+  "magnetLevel",
+  "fissionLevel",
+  "laserLevel",
+  "colliderLevel",
+  "superconductorLevel",
+  "nobelLevel"
+].forEach((levelKey) => {
+  atomGame[levelKey] = Math.max(
+    0,
+    Math.min(upgradeMaxLevel, Number.isFinite(atomGame[levelKey]) ? atomGame[levelKey] : 0)
+  );
+});
+atomGame.electrons = Math.max(0, Number.isFinite(atomGame.electrons) ? atomGame.electrons : 0);
+atomGame.lifetime = Math.max(0, Number.isFinite(atomGame.lifetime) ? atomGame.lifetime : 0);
 
 function formatNumber(value) {
   if (value < 1000) return Math.floor(value).toLocaleString("de-DE");
@@ -234,8 +253,6 @@ function formatNumber(value) {
 function upgradeCost(baseCost, level) {
   return Math.floor(baseCost * Math.pow(1.72, level));
 }
-
-const upgradeMaxLevel = 3;
 
 function limitedCost(baseCost, level) {
   return level >= upgradeMaxLevel ? Infinity : upgradeCost(baseCost, level);
