@@ -243,7 +243,12 @@ atomGame.electrons = Math.max(0, Number.isFinite(atomGame.electrons) ? atomGame.
 atomGame.lifetime = Math.max(0, Number.isFinite(atomGame.lifetime) ? atomGame.lifetime : 0);
 
 function formatNumber(value) {
-  if (value < 1000) return Math.floor(value).toLocaleString("de-DE");
+  if (value < 1000) {
+    const rounded = Math.round(value * 100) / 100;
+    return rounded.toLocaleString("de-DE", {
+      maximumFractionDigits: 2
+    });
+  }
   if (value < 1e6) return `${(value / 1000).toFixed(value < 10000 ? 1 : 0)} Tsd.`;
   if (value < 1e9) return `${(value / 1e6).toFixed(2)} Mio.`;
   if (value < 1e12) return `${(value / 1e9).toFixed(2)} Mrd.`;
