@@ -390,10 +390,12 @@ input {
 }
 
 .atom-game-content {
-  min-width: min(760px, calc(100vw - 32px));
-  max-width: 760px;
+  width: min(960px, calc(100vw - 32px));
+  min-width: 0;
+  max-width: 960px;
   max-height: calc(100vh - 32px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .atom-game-header {
@@ -689,6 +691,14 @@ dialog::backdrop {
 }
 
 @media (max-width: 820px) {
+  .atom-game-content {
+    width: calc(100vw - 24px);
+  }
+
+  .element-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
   .app {
     grid-template-columns: 1fr;
   }
@@ -1257,7 +1267,8 @@ dialog {
   }
 
   .atom-game-content {
-    min-width: calc(100vw - 16px);
+    width: calc(100vw - 16px);
+    min-width: 0;
     max-height: calc(100vh - 16px);
   }
 
