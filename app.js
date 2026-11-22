@@ -21,10 +21,15 @@ const privacyClose = document.getElementById("privacy-close");
 const atomButton = document.getElementById("atom-button");
 const atomGameDialog = document.getElementById("atom-game-dialog");
 const atomGameClose = document.getElementById("atom-game-close");
-const atomGameStart = document.getElementById("atom-game-start");
-const atomGameField = document.getElementById("atom-game-field");
 const electronTarget = document.getElementById("electron-target");
 const atomScore = document.getElementById("atom-score");
+const atomRates = document.getElementById("atom-rates");
+const elementGrid = document.getElementById("element-grid");
+const elementProgressText = document.getElementById("element-progress-text");
+const atomReset = document.getElementById("atom-reset");
+const upgradeClick = document.getElementById("upgrade-click");
+const upgradeAuto = document.getElementById("upgrade-auto");
+const upgradeMagnet = document.getElementById("upgrade-magnet");
 
 function createStarfield() {
   const starfield = document.getElementById("starfield");
@@ -172,70 +177,183 @@ privacyDialog.addEventListener("click", (event) => {
   if (event.target === privacyDialog) privacyDialog.close();
 });
 
-let atomGameTimer = null;
-let atomGameScore = 0;
-let atomGameEndsAt = 0;
+const elements = [
+  "H|Wasserstoff","He|Helium","Li|Lithium","Be|Beryllium","B|Bor","C|Kohlenstoff","N|Stickstoff","O|Sauerstoff","F|Fluor","Ne|Neon",
+  "Na|Natrium","Mg|Magnesium","Al|Aluminium","Si|Silicium","P|Phosphor","S|Schwefel","Cl|Chlor","Ar|Argon","K|Kalium","Ca|Calcium",
+  "Sc|Scandium","Ti|Titan","V|Vanadium","Cr|Chrom","Mn|Mangan","Fe|Eisen","Co|Cobalt","Ni|Nickel","Cu|Kupfer","Zn|Zink",
+  "Ga|Gallium","Ge|Germanium","As|Arsen","Se|Selen","Br|Brom","Kr|Krypton","Rb|Rubidium","Sr|Strontium","Y|Yttrium","Zr|Zirconium",
+  "Nb|Niob","Mo|Molybdän","Tc|Technetium","Ru|Ruthenium","Rh|Rhodium","Pd|Palladium","Ag|Silber","Cd|Cadmium","In|Indium","Sn|Zinn",
+  "Sb|Antimon","Te|Tellur","I|Iod","Xe|Xenon","Cs|Cäsium","Ba|Barium","La|Lanthan","Ce|Cer","Pr|Praseodym","Nd|Neodym",
+  "Pm|Promethium","Sm|Samarium","Eu|Europium","Gd|Gadolinium","Tb|Terbium","Dy|Dysprosium","Ho|Holmium","Er|Erbium","Tm|Thulium","Yb|Ytterbium",
+  "Lu|Lutetium","Hf|Hafnium","Ta|Tantal","W|Wolfram","Re|Rhenium","Os|Osmium","Ir|Iridium","Pt|Platin","Au|Gold","Hg|Quecksilber",
+  "Tl|Thallium","Pb|Blei","Bi|Bismut","Po|Polonium","At|Astat","Rn|Radon","Fr|Francium","Ra|Radium","Ac|Actinium","Th|Thorium",
+  "Pa|Protactinium","U|Uran","Np|Neptunium","Pu|Plutonium","Am|Americium","Cm|Curium","Bk|Berkelium","Cf|Californium","Es|Einsteinium","Fm|Fermium",
+  "Md|Mendelevium","No|Nobelium","Lr|Lawrencium","Rf|Rutherfordium","Db|Dubnium","Sg|Seaborgium","Bh|Bohrium","Hs|Hassium","Mt|Meitnerium","Ds|Darmstadtium",
+  "Rg|Roentgenium","Cn|Copernicium","Nh|Nihonium","Fl|Flerovium","Mc|Moscovium","Lv|Livermorium","Ts|Tenness","Og|Oganesson"
+];
 
-function moveElectron() {
-  const maxX = Math.max(0, atomGameField.clientWidth - 44);
-  const maxY = Math.max(0, atomGameField.clientHeight - 44);
-  electronTarget.style.left = `${Math.round(Math.random() * maxX)}px`;
-  electronTarget.style.top = `${Math.round(Math.random() * maxY)}px`;
+const defaultAtomGame = {
+  electrons: 0,
+  lifetime: 0,
+  clickLevel: 0,
+  autoLevel: 0,
+  magnetLevel: 0
+};
+
+let atomGame = { ...defaultAtomGame };
+
+try {
+  const savedGame = JSON.parse(localStorage.getItem("phystar-atom-game"));
+  if (savedGame) atomGame = { ...defaultAtomGame, ...savedGame };
+} catch {
+  atomGame = { ...defaultAtomGame };
 }
 
-function stopAtomGame() {
-  window.clearInterval(atomGameTimer);
-  atomGameTimer = null;
-  electronTarget.hidden = true;
-  atomGameStart.textContent = atomGameScore > 0 ? "Nochmal spielen" : "Start";
-  atomGameStart.disabled = false;
+function formatNumber(value) {
+  if (value < 1000) return Math.floor(value).toLocaleString("de-DE");
+  if (value < 1e6) return `${(value / 1000).toFixed(value < 10000 ? 1 : 0)} Tsd.`;
+  if (value < 1e9) return `${(value / 1e6).toFixed(2)} Mio.`;
+  if (value < 1e12) return `${(value / 1e9).toFixed(2)} Mrd.`;
+  return `${(value / 1e12).toFixed(2)} Bio.`;
 }
 
-function endAtomGame() {
-  stopAtomGame();
-  atomGameStart.textContent = "Nochmal spielen";
+function upgradeCost(baseCost, level) {
+  return Math.floor(baseCost * Math.pow(1.72, level));
 }
+
+function clickPower() {
+  return (1 + atomGame.clickLevel) * (1 + atomGame.magnetLevel * 0.1);
+}
+
+function autoPower() {
+  return atomGame.autoLevel;
+}
+
+function saveAtomGame() {
+  localStorage.setItem("phystar-atom-game", JSON.stringify(atomGame));
+}
+
+function unlockedElementCount() {
+  return elements.reduce((count, element, index) => {
+    const atomicNumber = index + 1;
+    const threshold = atomicNumber === 1 ? 0 : Math.round(20 * Math.pow(1.095, atomicNumber - 1));
+    return count + (atomGame.lifetime >= threshold ? 1 : 0);
+  }, 0);
+}
+
+function createElectronBurst() {
+  const burst = document.createElement("span");
+  burst.className = "electron-burst";
+  burst.textContent = `+${formatNumber(clickPower())}`;
+  burst.style.left = "50%";
+  burst.style.top = "50%";
+  electronTarget.parentElement.appendChild(burst);
+  window.setTimeout(() => burst.remove(), 700);
+}
+
+function renderElements() {
+  elementGrid.replaceChildren();
+  let unlocked = 0;
+
+  elements.forEach((entry, index) => {
+    const atomicNumber = index + 1;
+    const [symbol, name] = entry.split("|");
+    const threshold = atomicNumber === 1 ? 0 : Math.round(20 * Math.pow(1.095, atomicNumber - 1));
+    const isUnlocked = atomGame.lifetime >= threshold;
+    if (isUnlocked) unlocked += 1;
+
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = `element-tile${isUnlocked ? " is-unlocked" : ""}`;
+    tile.title = isUnlocked ? name : `${name} · Freischaltung bei ${formatNumber(threshold)} Elektronen`;
+    tile.innerHTML = `<span>${atomicNumber}</span><strong>${isUnlocked ? symbol : "?"}</strong><small>${isUnlocked ? name : formatNumber(threshold)}</small>`;
+    elementGrid.appendChild(tile);
+  });
+
+  elementProgressText.textContent = `${unlocked} / 118 freigeschaltet`;
+}
+
+function renderAtomGame() {
+  atomScore.textContent = formatNumber(atomGame.electrons);
+  atomRates.textContent = `+${formatNumber(clickPower())} pro Klick · ${formatNumber(autoPower())} pro Sekunde`;
+
+  const clickCost = upgradeCost(25, atomGame.clickLevel);
+  const autoCost = upgradeCost(50, atomGame.autoLevel);
+  const magnetCost = upgradeCost(100, atomGame.magnetLevel);
+
+  document.getElementById("upgrade-click-level").textContent = `Stufe ${atomGame.clickLevel} · +1 pro Klick`;
+  document.getElementById("upgrade-auto-level").textContent = `Stufe ${atomGame.autoLevel} · +1 pro Sekunde`;
+  document.getElementById("upgrade-magnet-level").textContent = `Stufe ${atomGame.magnetLevel} · +10 % Klickkraft`;
+  document.getElementById("upgrade-click-cost").textContent = formatNumber(clickCost);
+  document.getElementById("upgrade-auto-cost").textContent = formatNumber(autoCost);
+  document.getElementById("upgrade-magnet-cost").textContent = formatNumber(magnetCost);
+
+  upgradeClick.disabled = atomGame.electrons < clickCost;
+  upgradeAuto.disabled = atomGame.electrons < autoCost;
+  upgradeMagnet.disabled = atomGame.electrons < magnetCost;
+  renderElements();
+  saveAtomGame();
+}
+
+function addElectrons(amount) {
+  atomGame.electrons += amount;
+  atomGame.lifetime += amount;
+  renderAtomGame();
+}
+
+electronTarget.addEventListener("click", () => {
+  addElectrons(clickPower());
+  createElectronBurst();
+  electronTarget.classList.remove("is-clicked");
+  void electronTarget.offsetWidth;
+  electronTarget.classList.add("is-clicked");
+});
+
+upgradeClick.addEventListener("click", () => {
+  const cost = upgradeCost(25, atomGame.clickLevel);
+  if (atomGame.electrons < cost) return;
+  atomGame.electrons -= cost;
+  atomGame.clickLevel += 1;
+  renderAtomGame();
+});
+
+upgradeAuto.addEventListener("click", () => {
+  const cost = upgradeCost(50, atomGame.autoLevel);
+  if (atomGame.electrons < cost) return;
+  atomGame.electrons -= cost;
+  atomGame.autoLevel += 1;
+  renderAtomGame();
+});
+
+upgradeMagnet.addEventListener("click", () => {
+  const cost = upgradeCost(100, atomGame.magnetLevel);
+  if (atomGame.electrons < cost) return;
+  atomGame.electrons -= cost;
+  atomGame.magnetLevel += 1;
+  renderAtomGame();
+});
+
+atomReset.addEventListener("click", () => {
+  if (!window.confirm("Das Elektronen-Spiel wirklich zurücksetzen?")) return;
+  atomGame = { ...defaultAtomGame };
+  renderAtomGame();
+});
 
 atomButton.addEventListener("click", () => {
-  atomGameScore = 0;
-  atomScore.textContent = "0";
-  atomGameStart.textContent = "Start";
-  electronTarget.hidden = true;
+  renderAtomGame();
   atomGameDialog.showModal();
 });
 
-atomGameStart.addEventListener("click", () => {
-  atomGameScore = 0;
-  atomScore.textContent = "0";
-  atomGameStart.disabled = true;
-  electronTarget.hidden = false;
-  moveElectron();
-  atomGameEndsAt = Date.now() + 15000;
-
-  atomGameTimer = window.setInterval(() => {
-    if (Date.now() >= atomGameEndsAt) endAtomGame();
-  }, 100);
-});
-
-electronTarget.addEventListener("click", () => {
-  if (atomGameStart.disabled && Date.now() < atomGameEndsAt) {
-    atomGameScore += 1;
-    atomScore.textContent = String(atomGameScore);
-    moveElectron();
-  }
-});
-
-atomGameClose.addEventListener("click", () => {
-  stopAtomGame();
-  atomGameDialog.close();
-});
+atomGameClose.addEventListener("click", () => atomGameDialog.close());
 
 atomGameDialog.addEventListener("click", (event) => {
-  if (event.target === atomGameDialog) {
-    stopAtomGame();
-    atomGameDialog.close();
-  }
+  if (event.target === atomGameDialog) atomGameDialog.close();
 });
+
+window.setInterval(() => {
+  if (autoPower() <= 0) return;
+  addElectrons(autoPower());
+}, 1000);
 
 window.addEventListener("load", () => {
   const secureContext =

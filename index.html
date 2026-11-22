@@ -130,17 +130,49 @@
         <div class="atom-game-header">
           <div>
             <p class="privacy-kicker">SECRET EXPERIMENT</p>
-            <h2>Elektron-Jagd</h2>
+            <h2>Elektronen-Klicker</h2>
           </div>
-          <div class="atom-score" aria-live="polite"><span id="atom-score">0</span> Punkte</div>
+          <div class="atom-score" aria-live="polite"><span id="atom-score">0</span> Elektronen</div>
         </div>
-        <p class="atom-game-instruction">Fange das Elektron. Du hast 15 Sekunden.</p>
-        <div class="atom-game-field" id="atom-game-field">
-          <button class="electron-target" id="electron-target" type="button" aria-label="Elektron fangen"></button>
+        <div class="electron-clicker">
+          <button class="electron-target" id="electron-target" type="button" aria-label="Elektron sammeln">
+            <span class="electron-core"></span>
+          </button>
+          <p id="atom-rates">+1 pro Klick · 0 pro Sekunde</p>
+        </div>
+        <div class="atom-upgrades">
+          <button class="atom-upgrade" id="upgrade-click" type="button">
+            <span>
+              <strong>Klickverstärker</strong>
+              <small id="upgrade-click-level">Stufe 0 · +1 pro Klick</small>
+            </span>
+            <b id="upgrade-click-cost">25</b>
+          </button>
+          <button class="atom-upgrade" id="upgrade-auto" type="button">
+            <span>
+              <strong>Elektronenreaktor</strong>
+              <small id="upgrade-auto-level">Stufe 0 · +1 pro Sekunde</small>
+            </span>
+            <b id="upgrade-auto-cost">50</b>
+          </button>
+          <button class="atom-upgrade" id="upgrade-magnet" type="button">
+            <span>
+              <strong>Element-Magnet</strong>
+              <small id="upgrade-magnet-level">Stufe 0 · +10 % Klickkraft</small>
+            </span>
+            <b id="upgrade-magnet-cost">100</b>
+          </button>
+        </div>
+        <div class="element-progress">
+          <div class="element-progress-header">
+            <strong>Elemente</strong>
+            <span id="element-progress-text">0 / 118 freigeschaltet</span>
+          </div>
+          <div class="element-grid" id="element-grid"></div>
         </div>
         <div class="dialog-actions">
           <button id="atom-game-close" type="button" class="secondary-button">Schließen</button>
-          <button id="atom-game-start" type="button">Start</button>
+          <button id="atom-reset" type="button" class="atom-reset">Zurücksetzen</button>
         </div>
       </div>
     </dialog>
