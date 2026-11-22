@@ -18,6 +18,13 @@ const manualSubmit = document.getElementById("manual-submit");
 const privacyButton = document.getElementById("privacy-button");
 const privacyDialog = document.getElementById("privacy-dialog");
 const privacyClose = document.getElementById("privacy-close");
+const atomButton = document.getElementById("atom-button");
+const atomGameDialog = document.getElementById("atom-game-dialog");
+const atomGameClose = document.getElementById("atom-game-close");
+const atomGameStart = document.getElementById("atom-game-start");
+const atomGameField = document.getElementById("atom-game-field");
+const electronTarget = document.getElementById("electron-target");
+const atomScore = document.getElementById("atom-score");
 
 function createStarfield() {
   const starfield = document.getElementById("starfield");
@@ -163,6 +170,71 @@ privacyButton.addEventListener("click", () => privacyDialog.showModal());
 privacyClose.addEventListener("click", () => privacyDialog.close());
 privacyDialog.addEventListener("click", (event) => {
   if (event.target === privacyDialog) privacyDialog.close();
+});
+
+let atomGameTimer = null;
+let atomGameScore = 0;
+let atomGameEndsAt = 0;
+
+function moveElectron() {
+  const maxX = Math.max(0, atomGameField.clientWidth - 44);
+  const maxY = Math.max(0, atomGameField.clientHeight - 44);
+  electronTarget.style.left = `${Math.round(Math.random() * maxX)}px`;
+  electronTarget.style.top = `${Math.round(Math.random() * maxY)}px`;
+}
+
+function stopAtomGame() {
+  window.clearInterval(atomGameTimer);
+  atomGameTimer = null;
+  electronTarget.hidden = true;
+  atomGameStart.textContent = atomGameScore > 0 ? "Nochmal spielen" : "Start";
+  atomGameStart.disabled = false;
+}
+
+function endAtomGame() {
+  stopAtomGame();
+  atomGameStart.textContent = "Nochmal spielen";
+}
+
+atomButton.addEventListener("click", () => {
+  atomGameScore = 0;
+  atomScore.textContent = "0";
+  atomGameStart.textContent = "Start";
+  electronTarget.hidden = true;
+  atomGameDialog.showModal();
+});
+
+atomGameStart.addEventListener("click", () => {
+  atomGameScore = 0;
+  atomScore.textContent = "0";
+  atomGameStart.disabled = true;
+  electronTarget.hidden = false;
+  moveElectron();
+  atomGameEndsAt = Date.now() + 15000;
+
+  atomGameTimer = window.setInterval(() => {
+    if (Date.now() >= atomGameEndsAt) endAtomGame();
+  }, 100);
+});
+
+electronTarget.addEventListener("click", () => {
+  if (atomGameStart.disabled && Date.now() < atomGameEndsAt) {
+    atomGameScore += 1;
+    atomScore.textContent = String(atomGameScore);
+    moveElectron();
+  }
+});
+
+atomGameClose.addEventListener("click", () => {
+  stopAtomGame();
+  atomGameDialog.close();
+});
+
+atomGameDialog.addEventListener("click", (event) => {
+  if (event.target === atomGameDialog) {
+    stopAtomGame();
+    atomGameDialog.close();
+  }
 });
 
 window.addEventListener("load", () => {

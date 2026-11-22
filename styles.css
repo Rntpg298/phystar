@@ -389,6 +389,82 @@ input {
   letter-spacing: 0.14em;
 }
 
+.atom-game-content {
+  min-width: min(520px, calc(100vw - 32px));
+  max-width: 520px;
+}
+
+.atom-game-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.atom-game-header h2 {
+  margin: 6px 0 0;
+  color: #17243a;
+  font-size: 28px;
+}
+
+.atom-score {
+  min-width: 92px;
+  border: 1px solid #dfe5e1;
+  border-radius: 999px;
+  padding: 9px 12px;
+  color: #68758a;
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  text-align: center;
+}
+
+.atom-score span {
+  color: #1d8995;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.atom-game-instruction {
+  margin: -2px 0 0;
+  color: #68758a;
+  font-size: 13px;
+}
+
+.atom-game-field {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  border: 1px solid #dfe5e1;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at center, rgba(105, 214, 223, 0.16), transparent 28%),
+    linear-gradient(rgba(23, 36, 58, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 36, 58, 0.06) 1px, transparent 1px),
+    #f4f6f1;
+  background-size: auto, 28px 28px, 28px 28px, auto;
+}
+
+.electron-target {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 8px solid rgba(105, 214, 223, 0.18);
+  border-radius: 50%;
+  background: #f2b966;
+  box-shadow: 0 0 0 4px #17243a, 0 0 18px rgba(242, 185, 102, 0.9);
+  cursor: crosshair;
+  animation: electron-pulse 700ms ease-in-out infinite alternate;
+}
+
+.electron-target[hidden] {
+  display: none;
+}
+
+@keyframes electron-pulse {
+  from { transform: scale(0.86); }
+  to { transform: scale(1); }
+}
+
 dialog {
   width: min(460px, calc(100% - 32px));
   border: 0;
@@ -655,6 +731,28 @@ body {
   flex: 0 0 auto;
   margin-left: 12px;
   overflow: visible;
+}
+
+.atom-button {
+  flex: 0 0 auto;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 180ms ease, filter 180ms ease;
+}
+
+.atom-button:hover {
+  transform: scale(1.06) rotate(4deg);
+  filter: drop-shadow(0 0 12px rgba(105, 214, 223, 0.28));
+}
+
+.atom-button:focus-visible,
+.electron-target:focus-visible {
+  outline: 2px solid #69d6df;
+  outline-offset: 4px;
 }
 
 .atom-art ellipse,

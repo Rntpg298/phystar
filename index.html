@@ -32,13 +32,15 @@
             <p class="lab-kicker">DEIN PHYSIK-ABENTEUER <span>START</span></p>
             <p class="lab-caption">Scanne eine Phystar-Karte und entdecke das Physik-Phänomen dahinter.</p>
           </div>
-          <svg class="atom-art" viewBox="0 0 120 120" aria-hidden="true">
-            <ellipse cx="60" cy="60" rx="48" ry="19" />
-            <ellipse cx="60" cy="60" rx="48" ry="19" transform="rotate(60 60 60)" />
-            <ellipse cx="60" cy="60" rx="48" ry="19" transform="rotate(120 60 60)" />
-            <circle class="atom-core" cx="60" cy="60" r="5" />
-            <circle class="atom-electron" cx="107" cy="60" r="3.5" />
-          </svg>
+          <button class="atom-button" id="atom-button" type="button" aria-label="Geheimes Atomspiel öffnen" title="Geheimes Atomspiel">
+            <svg class="atom-art" viewBox="0 0 120 120" aria-hidden="true">
+              <ellipse cx="60" cy="60" rx="48" ry="19" />
+              <ellipse cx="60" cy="60" rx="48" ry="19" transform="rotate(60 60 60)" />
+              <ellipse cx="60" cy="60" rx="48" ry="19" transform="rotate(120 60 60)" />
+              <circle class="atom-core" cx="60" cy="60" r="5" />
+              <circle class="atom-electron" cx="107" cy="60" r="3.5" />
+            </svg>
+          </button>
         </div>
 
         <div class="scanner-wrap">
@@ -119,6 +121,26 @@
         <p>Der Kamerazugriff wird nur zum Scannen der QR-Codes verwendet. Bilder oder QR-Inhalte werden nicht gespeichert oder übertragen.</p>
         <div class="dialog-actions">
           <button id="privacy-close" type="button">Verstanden</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="atom-game-dialog">
+      <div class="dialog-content atom-game-content">
+        <div class="atom-game-header">
+          <div>
+            <p class="privacy-kicker">SECRET EXPERIMENT</p>
+            <h2>Elektron-Jagd</h2>
+          </div>
+          <div class="atom-score" aria-live="polite"><span id="atom-score">0</span> Punkte</div>
+        </div>
+        <p class="atom-game-instruction">Fange das Elektron. Du hast 15 Sekunden.</p>
+        <div class="atom-game-field" id="atom-game-field">
+          <button class="electron-target" id="electron-target" type="button" aria-label="Elektron fangen"></button>
+        </div>
+        <div class="dialog-actions">
+          <button id="atom-game-close" type="button" class="secondary-button">Schließen</button>
+          <button id="atom-game-start" type="button">Start</button>
         </div>
       </div>
     </dialog>
